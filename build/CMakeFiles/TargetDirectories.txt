@@ -1,0 +1,3 @@
+C:/Users/rafae/source/repos/SDLProjects/RogueliteGame/build/CMakeFiles/RogueliteGame.dir
+C:/Users/rafae/source/repos/SDLProjects/RogueliteGame/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/rafae/source/repos/SDLProjects/RogueliteGame/build/CMakeFiles/ZERO_CHECK.dir

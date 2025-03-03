@@ -1,5 +1,6 @@
 #include "rendering/Renderer.h"
 #include <iostream>
+#include <SDL3/SDL.h>
 
 Renderer::Renderer() 
     : window(nullptr), renderer(nullptr), screenWidth(800), screenHeight(600) {
@@ -12,36 +13,35 @@ Renderer::~Renderer() {
 bool Renderer::initialize(const std::string& title, int width, int height) {
     screenWidth = width;
     screenHeight = height;
-    
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize! SDL Error: " << SDL_GetError() << std::endl;
         return false;
     }
-    
+
     window = SDL_CreateWindow(
         title.c_str(),
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
         screenWidth,
         screenHeight,
-        SDL_WINDOW_SHOWN
+        SDL_WINDOW_RESIZABLE
     );
-    
+
     if (!window) {
         std::cerr << "Window could not be created! SDL Error: " << SDL_GetError() << std::endl;
         return false;
     }
+
     
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    
+    renderer = SDL_CreateRenderer(window, "opengl");
+
     if (!renderer) {
         std::cerr << "Renderer could not be created! SDL Error: " << SDL_GetError() << std::endl;
         return false;
     }
-    
+
     // Set renderer color
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    
+
     return true;
 }
 
@@ -70,7 +70,9 @@ void Renderer::cleanup() {
 
 void Renderer::drawRect(int x, int y, int width, int height, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
-    
-    SDL_Rect rect = {x, y, width, height};
-    SDL_RenderFillRect(renderer, &rect);
+
+    // Use SDL_FRect em vez de SDL_Rect
+    SDL_FRect frect = { (float)x, (float)y, (float)width, (float)height };
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    SDL_RenderFillRect(renderer, &frect);
 }

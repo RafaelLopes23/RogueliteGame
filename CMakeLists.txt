@@ -1,31 +1,61 @@
-cmake_minimum_required(VERSION 3.10)
-project(RogueliteGame VERSION 1.0)
+cmake_minimum_required(VERSION 3.16)
+project(RogueliteGame VERSION 0.1.0 LANGUAGES C CXX)
 
-# Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+# Definir o padrão C++
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set SDL2 paths manually (adjust these paths to your SDL2 installation)
-set(SDL2_DIR "C:/path/to/your/SDL2")
-set(SDL2_INCLUDE_DIRS "${SDL2_DIR}/include")
-set(SDL2_LIBRARIES "${SDL2_DIR}/lib/x64/SDL2.lib;${SDL2_DIR}/lib/x64/SDL2main.lib")
+# Configurar diretórios de saída
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Include directories
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${SDL2_INCLUDE_DIRS})
+# Adicionar diretório de cabeçalhos
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL3-3.2.4/include
+)
 
-# Source files
+# Encontrar bibliotecas
+link_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL3-3.2.4/lib/x64
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL3-3.2.4/lib/x86
+)
+
+# Coletar todos os arquivos fonte
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-# Add executable
-add_executable(${PROJECT_NAME} ${SOURCES})
+# Criar executável
+add_executable(${PROJECT_NAME} ${SOURCES} "include/entities/Enemy.h" "src/entities/Enemy.cpp")
 
-# Link SDL2
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES})
+# Vincular bibliotecas
+target_link_libraries(${PROJECT_NAME} 
+    SDL3
+    # Adicione aqui outras bibliotecas necessárias, como SDL3_image, SDL3_ttf, etc.
+)
 
-# Copy SDL2.dll to output directory
+# Copiar DLLs para o diretório de saída em sistemas Windows
+if(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        # 64-bit build
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL3-3.2.4/lib/x64" 
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        )
+    else()
+        # 32-bit build
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL3-3.2.4/lib/x86" 
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        )
+    endif()
+endif()
+
+# Copiar recursos (assets)
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${SDL2_DIR}/lib/x64/SDL2.dll"
-    $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_CURRENT_SOURCE_DIR}/assets" 
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
+)
